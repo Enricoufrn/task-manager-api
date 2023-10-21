@@ -1,6 +1,7 @@
 package com.example.taskmanagerapi.controllers;
 
 import com.example.taskmanagerapi.dtos.TaskDTO;
+import com.example.taskmanagerapi.dtos.UpdateTaskStatusRequest;
 import com.example.taskmanagerapi.services.TaskService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -50,5 +51,11 @@ public class TaskController extends GenericController{
     public ResponseEntity<?> deleteTask(@PathVariable UUID id){
         this.taskService.delete(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/update-status")
+    public ResponseEntity<?> updateTaskStatus(@RequestBody UpdateTaskStatusRequest request){
+        TaskDTO updated = this.taskService.changeTaskStatus(request);
+        return ResponseEntity.ok(updated);
     }
 }

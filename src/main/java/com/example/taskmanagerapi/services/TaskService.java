@@ -3,7 +3,9 @@ package com.example.taskmanagerapi.services;
 import com.example.taskmanagerapi.domain.Task;
 import com.example.taskmanagerapi.domain.User;
 import com.example.taskmanagerapi.domain.enumerations.MessageCode;
+import com.example.taskmanagerapi.domain.enumerations.TaskStatus;
 import com.example.taskmanagerapi.dtos.TaskDTO;
+import com.example.taskmanagerapi.dtos.UpdateTaskStatusRequest;
 import com.example.taskmanagerapi.exceptions.ResourceException;
 import com.example.taskmanagerapi.helper.MessageHelper;
 import com.example.taskmanagerapi.helper.UserHelper;
@@ -48,16 +50,33 @@ public class TaskService {
         return new TaskDTO(task);
     }
     private Task findById(UUID id){
+        if (id == null) throw new ResourceException(this.messageHelper.getMessage(MessageCode.BAD_REQUEST), "id: "+ id, HttpStatus.NOT_FOUND);
         return this.taskRepository.findById(id).orElseThrow(() ->
                 new ResourceException(this.messageHelper.getMessage(MessageCode.TASK_NOT_FOUND), "id: "+ id, HttpStatus.NOT_FOUND));
     }
 
     public void delete(UUID id){
-        if (id == null) throw new ResourceException(this.messageHelper.getMessage(MessageCode.BAD_REQUEST), "id: "+ id, HttpStatus.NOT_FOUND);
         Task task = this.findById(id);
         User loggedUser = this.userHelper.getLoggedUser();
         if (!task.getOwner().getId().equals(loggedUser.getId()))
             throw new ResourceException(this.messageHelper.getMessage(MessageCode.PERMISSION_DENIED), "", HttpStatus.FORBIDDEN);
         this.taskRepository.delete(task);
+    }
+
+    public TaskDTO changeTaskStatus(UpdateTaskStatusRequest request){
+        UUID taskId = request.taskId();
+        TaskStatus status = request.status();
+        Task task = this.findById(taskId);
+        User loggedUser = this.userHelper.getLoggedUser();
+        if (!task.getOwner().getId().equals(loggedUser.getId()))
+            throw new ResourceException(this.messageHelper.getMessage(MessageCode.PERMISSION_DENIED), "", HttpStatus.FORBIDDEN);
+        if (status == null) throw new ResourceException(this.messageHelper.getMessage(MessageCode.BAD_REQUEST), "status: "+ status, HttpStatus.BAD_REQUEST);
+        TaskStatus oldStatus = task.getStatus();
+        if (oldStatus == TaskStatus.ARCHIVED)
+            throw new ResourceException(this.messageHelper.getMessage(MessageCode.TASK_ARCHIVED), "", HttpStatus.BAD_REQUEST);
+        if (oldStatus == TaskStatus.DONE && status != TaskStatus.ARCHIVED)
+            throw new ResourceException(this.messageHelper.getMessage(MessageCode.CHANGE_STATUS_TASK_NOT_ALLOWED), "", HttpStatus.BAD_REQUEST);
+        task.setStatus(status);
+        return new TaskDTO(this.save(task));
     }
 }

@@ -10,6 +10,8 @@ public enum MessageCode {
     USER_DELETE_SELF("user.delete.self"),
     // TASK
     TASK_NOT_FOUND("task.not.found"),
+    CHANGE_STATUS_TASK_NOT_ALLOWED("change.status.task.not.allowed"),
+    TASK_ARCHIVED("task.archived"),
     // AUTHENTICATION
     INVALID_AUTHORIZATION_HEADER("invalid.authorization.header"),
     AUTHENTICATION_NOT_FINALLY("authentication.not.finally"),
