@@ -7,6 +7,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConversionException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -32,9 +34,15 @@ public class RestExceptionHandler {
     }
 
     @ExceptionHandler(GenericCustomException.class)
-    public ResponseEntity<ApiError> handlerGenerateTokenExceptions(GenericCustomException genericCustomException) {
+    public ResponseEntity<ApiError> handlerGenericCustomExceptions(GenericCustomException genericCustomException) {
         ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), genericCustomException.getMessage(), genericCustomException.getDetails());
         return getResponseEntity(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ResourceException.class)
+    public ResponseEntity<ApiError> handlerResourceExceptions(ResourceException resourceException) {
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST.getReasonPhrase(), resourceException.getMessage(), resourceException.getDetails());
+        return getResponseEntity(apiError, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -55,6 +63,12 @@ public class RestExceptionHandler {
     public ResponseEntity<ApiError> handleHttpMessageErrorConversionException(HttpMessageConversionException exception){
         ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST.getReasonPhrase(), this.messageHelper.getMessage(MessageCode.BAD_REQUEST), exception.getMessage());
         return getResponseEntity(apiError, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiError> handleAuthenticationException(AuthenticationException exception){
+        ApiError apiError = new ApiError(HttpStatus.UNAUTHORIZED.getReasonPhrase(), this.messageHelper.getMessage(MessageCode.INVALID_CREDENTIALS), exception.getMessage());
+        return getResponseEntity(apiError, HttpStatus.UNAUTHORIZED);
     }
 
     private ResponseEntity<ApiError> getResponseEntity(ApiError apiError, HttpStatus httpStatus) {
