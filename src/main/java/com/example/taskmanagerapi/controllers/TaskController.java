@@ -1,6 +1,7 @@
 package com.example.taskmanagerapi.controllers;
 
 import com.example.taskmanagerapi.dtos.TaskDTO;
+import com.example.taskmanagerapi.dtos.TasksGroupedDTO;
 import com.example.taskmanagerapi.dtos.UpdateTaskStatusRequest;
 import com.example.taskmanagerapi.services.TaskService;
 import org.springframework.http.ResponseEntity;
@@ -57,5 +58,17 @@ public class TaskController extends GenericController{
     public ResponseEntity<?> updateTaskStatus(@RequestBody UpdateTaskStatusRequest request){
         TaskDTO updated = this.taskService.changeTaskStatus(request);
         return ResponseEntity.ok(updated);
+    }
+
+//    @GetMapping("/search")
+//    public ResponseEntity<?> searchTasks(@RequestParam String query){
+//        List<TaskDTO> tasks = this.taskService.searchTasks(query);
+//        return ResponseEntity.ok(tasks);
+//    }
+
+    @GetMapping("/get-tasks-grouped-by-status")
+    public ResponseEntity<?> getTasksGroupedByStatus(){
+        List<TasksGroupedDTO> tasks = this.taskService.getTasksGroupedByStatus();
+        return ResponseEntity.ok(tasks);
     }
 }
